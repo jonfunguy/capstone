@@ -5,6 +5,7 @@
 #include "colors.h"
 #include "player.h"
 #include "raylib.h"
+#include "platform.h"
 
 namespace game {
 
@@ -39,12 +40,23 @@ void Game::Run() {
                        3 * static_cast<float>(screen_height_) / 5});
     camera_.SetZoom(1.0f);
 
+    Platform floor_object(rl::Vector2{0.0f,533.0f}, rl::Vector2{1000.0f,50.0f}, rl::Color::Blue());
+    Platform wall_object(rl::Vector2{0.0f,333.0f}, rl::Vector2{50.0f,200.0f}, rl::Color::Yellow());
+
+    std::unique_ptr<GameObject> floor = std::make_unique<Platform>(std::move(floor_object));
+    std::unique_ptr<GameObject> wall = std::make_unique<Platform>(std::move(wall_object));
+
+    AddGameObject(std::move(floor));
+    AddGameObject(std::move(wall));
+
     while (!window_.ShouldClose()) {
         if (window_.IsResized()) {
             HandleResize();
         }
 
         HandleKeyboardEvents();
+
+        HandleCollisions();
 
         camera_.SetTarget(Vector2{player_->GetPositionX() + 64,
                                   3 * static_cast<float>(screen_height_) / 5});
@@ -86,6 +98,10 @@ void Game::Run() {
         window_.ClearBackground(game::SPACE);
 
         background_texture.Draw(bg_source_rec_, bg_dest_rec_);
+
+        for(auto& obj:game_objects_) {
+            obj->Draw();
+        }
 
         std::string msg =
             "Press F to toggle camera mode. Current mode: " +
@@ -137,6 +153,10 @@ void Game::CorrectPlayerPosition() {
             camera_.AddOffsetX(amount);
         }
     }
+}
+
+void Game::AddGameObject(std::unique_ptr<GameObject> object){
+    game_objects_.push_back(std::move(object));
 }
 
 }  // namespace game

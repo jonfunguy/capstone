@@ -34,6 +34,8 @@ public:
 private:
     void        HandleResize();
     void        HandleKeyboardEvents();
+    void        HandleCollisions();
+    void        AddGameObject(std::unique_ptr<GameObject> object);
     inline void SetBgSourceRec(const rl::Rectangle& bg_source_rec) {
         bg_source_rec_ = bg_source_rec;
     }
