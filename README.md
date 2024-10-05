@@ -18,8 +18,6 @@ You should have the zig toolchain installed. If you dont, install it.
 MacOS: `brew install zig`
 Windows: `winget install -e --id zig.zig`
 
-I LOVE LIFE!
-
 Check your zig version. It should be `0.13.0`.
 
 Now, in this directory, you can run `zig build` to build the project and dump the headers in `/zig-out/include`. To run the application manually, run the file `/zig-out/bin/roguelike`.
