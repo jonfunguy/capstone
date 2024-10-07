@@ -8,7 +8,6 @@ void Game::HandleKeyboardEvents() {
     if (IsKeyDown(KEY_A)) {
         bg_source_rec_.x -= 10;
         bg_dest_rec_.x -= 10;
-        //player_->SetPositionX(player_->GetPositionX() - 2);
 
         if (camera_.Mode() == Camera::Mode::kFixed &&
             player_->GetPositionX() > bg_dest_rec_.x) {
@@ -19,7 +18,6 @@ void Game::HandleKeyboardEvents() {
     if (IsKeyDown(KEY_D)) {
         bg_source_rec_.x += 10;
         bg_dest_rec_.x += 10;
-        //player_->SetPositionX(player_->GetPositionX() + 2);
 
         if (camera_.Mode() == Camera::Mode::kFixed &&
             player_->GetPositionX() <
@@ -28,9 +26,9 @@ void Game::HandleKeyboardEvents() {
             player_->SetPositionX(player_->GetPositionX() + 10);
         }
     }
-    //TODO make a good jump
+    //Basic jump has been added. We add negative y veloicty to make the player jump up.
     if (IsKeyDown(KEY_SPACE)) {
-        
+        player_->SetVelocityY(-20.0f);
     }
     if (IsKeyDown(KEY_UP)) {
         if (camera_.Zoom() > 2.0f) {
@@ -63,7 +61,7 @@ void Game::HandleCollisions() {
          // and the object's bottom side is greater than the player's top side
          game_objects_[i]->GetPositionY() + game_objects_[i]->GetDimensionsY() > player_->GetPositionY()) {
             // Overlaps are from the perspective of the object, so the left_side_overlap is the player overlaping the left side of the object
-            float right_side_overlap = game_objects_[i]->GetPositionX() - player_->GetPositionX();
+            float right_side_overlap = game_objects_[i]->GetPositionX() + game_objects_[i]->GetDimensionsX() - player_->GetPositionX();
             float left_side_overlap = player_->GetPositionX() + player_->GetDimensionsX() - game_objects_[i]->GetPositionX();
             float top_side_overlap = player_->GetPositionY() + player_->GetDimensionsY() - game_objects_[i]->GetPositionY();
             float bottom_side_overlap = game_objects_[i]->GetPositionY() + game_objects_[i]->GetDimensionsY() - player_->GetPositionY();
@@ -71,7 +69,7 @@ void Game::HandleCollisions() {
             bool left_overlapping = left_side_overlap > 0;
             bool top_overlapping = top_side_overlap > 0;
             bool bottom_overlapping = bottom_side_overlap > 0;
-            // Corner case, we are overlapping on the top right corner, resolve in the direction if the smallest overlap
+            // Corner case, we are overlapping on the top right corner, resolve in the direction of the smallest overlap
             if (right_overlapping && top_overlapping){
                 if (right_side_overlap < top_side_overlap) {
                     player_->SetPositionX(player_->GetPositionX() + right_side_overlap);
@@ -80,7 +78,7 @@ void Game::HandleCollisions() {
                     player_->SetPositionY(player_->GetPositionY() - top_side_overlap);
                 }
             }
-            // Corner case, we are overlapping on the bottom right corner, resolve in the direction if the smallest overlap
+            // Corner case, we are overlapping on the bottom right corner, resolve in the direction of the smallest overlap
             else if (right_overlapping && bottom_overlapping) {
                 if (right_side_overlap < bottom_side_overlap) {
                     player_->SetPositionX(player_->GetPositionX() + right_side_overlap);
@@ -89,7 +87,7 @@ void Game::HandleCollisions() {
                     player_->SetPositionY(player_->GetPositionY() + bottom_side_overlap);
                 }
             }
-            // Corner case, we are overlapping on the top left corner, resolve in the direction if the smallest overlap
+            // Corner case, we are overlapping on the top left corner, resolve in the direction of the smallest overlap
             else if (left_overlapping && top_overlapping) {
                 if (left_side_overlap < top_side_overlap) {
                     player_->SetPositionX(player_->GetPositionX() - left_side_overlap);
@@ -98,7 +96,7 @@ void Game::HandleCollisions() {
                     player_->SetPositionY(player_->GetPositionY() - top_side_overlap);
                 }
             }
-            // Corner case, we are overlapping on the bottom left corner, resolve in the direction if the smallest overlap
+            // Corner case, we are overlapping on the bottom left corner, resolve in the direction of the smallest overlap
             else if (left_overlapping && bottom_overlapping) {
                 if (left_side_overlap < bottom_side_overlap) {
                     player_->SetPositionX(player_->GetPositionX() - left_side_overlap);
@@ -106,22 +104,6 @@ void Game::HandleCollisions() {
                 else {
                     player_->SetPositionY(player_->GetPositionY() + bottom_side_overlap);
                 }
-            }
-            // Right side alone case, we are overlapping on the right side, resolve by adding right side overlap to player x position
-            else if (right_overlapping) {
-                player_->SetPositionX(player_->GetPositionX() + right_side_overlap);
-            }
-            // Left side alone case, we are overlapping on the left side, resolve by taking away left side overlap from player x position
-            else if (left_overlapping) {
-                player_->SetPositionX(player_->GetPositionX() - left_side_overlap);
-            }
-            // Top side alone case, we are overlapping on the top side, resolve by taking away top side overlap from player y position
-            else if (top_overlapping) {
-                player_->SetPositionY(player_->GetPositionY() - top_side_overlap);
-            }
-            // Bottom side alone case, we are overlapping on the bottom side, resolve by adding top side overlap to player y position
-            else if (bottom_overlapping) {
-                player_->SetPositionY(player_->GetPositionY() + bottom_side_overlap);
             }
         }
     }

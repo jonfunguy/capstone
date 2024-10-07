@@ -48,11 +48,22 @@ void Game::Run() {
 
     AddGameObject(std::move(floor));
     AddGameObject(std::move(wall));
+    player_->SetVelocityY(10.0f);
 
     while (!window_.ShouldClose()) {
         if (window_.IsResized()) {
             HandleResize();
         }
+
+        // Added code to make gravity exist
+        if (player_->GetVelocityY() < 10.0f) {
+            player_->SetVelocityY(player_->GetVelocityY() + 1.2f);
+        }
+        else {
+            player_->SetVelocityY(10.0f);
+        }
+        player_->SetPositionY(player_->GetPositionY() + player_->GetVelocityY());
+        // end of added code
 
         HandleKeyboardEvents();
 

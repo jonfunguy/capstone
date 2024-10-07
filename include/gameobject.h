@@ -19,6 +19,8 @@ public:
     
     virtual ~GameObject() = default;
 
+    /* Draw function needs to be changed so that it takes a float value named scale. 
+     Currently the list of game objects that are looped through to be drawn in game.cc are not drawn to proper scale. */
     virtual void Draw() = 0;
     virtual void Update() = 0;
 
@@ -29,17 +31,29 @@ public:
 
     inline auto GetPositionX() const -> float { return position_.x; }
     inline auto GetPositionY() const -> float { return position_.y; }
+    // added get x and y dimensions functions
     float GetDimensionsX() { return dimensions_.x; }
     float GetDimensionsY() { return dimensions_.y; }
+    // added get x and y velocity functions
+    float GetVelocityY() { return velocity_y;}
+    float GetVelocityX() { return velocity_x;}
 
     inline void SetPosition(float x, float y) { position_ = rl::Vector2{x, y}; }
     inline void SetPositionX(float x) { position_.x = x; }
     inline void SetPositionY(float y) { position_.y = y; }
+    // added set dimensions function
     void SetDimensions(rl::Vector2 newDimensions){ dimensions_ = newDimensions; }
+    // Added set x and y velocity functions
+    void SetVelocityX(float newVelocity){ velocity_x = newVelocity; }
+    void SetVelocityY(float newVelocity){ velocity_y = newVelocity; }
+    
 
 protected:
     rl::Vector2 position_;
     rl::Vector2 dimensions_ = {0,0};
+    // Added 2 variables for every game object, x and y velocity 
+    float velocity_y = 0;
+    float velocity_x = 0;
 };
 
 /**
