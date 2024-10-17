@@ -37,19 +37,19 @@ void Game::InitGame() {
     camera_.SetZoom(1.0f);
 
     UntexturedPlatform wall1(rl::Vector2(20.0F, 300.0F),
-                             rl::Vector2(10.0F, 700.0F), rl::Color::Red(),
+                             rl::Vector2(25.0F, 700.0F), rl::Color::Red(),
                              scale_);
 
     UntexturedPlatform wall2(rl::Vector2(990.0F, 300.0F),
-                             rl::Vector2(10.0F, 700.0F), rl::Color::Red(),
+                             rl::Vector2(25.0F, 700.0F), rl::Color::Red(),
                              scale_);
 
     UntexturedPlatform floor(rl::Vector2(20.0F, 600.0F),
-                             rl::Vector2(1000.0F, 10.0F), rl::Color::Green(),
+                             rl::Vector2(1000.0F, 25.0F), rl::Color::Green(),
                              scale_);
 
     UntexturedPlatform ceiling(rl::Vector2(200.0F, 300.0F),
-                               rl::Vector2(200.0F, 10.0F), rl::Color::Green(),
+                               rl::Vector2(200.0F, 25.0F), rl::Color::Green(),
                                scale_);
 
     actors_.push_back(std::move(std::make_shared<Actor>(wall1)));
@@ -76,9 +76,9 @@ void Game::Run() {
             HandleResize();
         }
 
-        HandleKeyboardEvents();
-
         auto player = std::get_if<Player>(actors_[0].get());
+
+        HandleKeyboardEvents();        
 
         camera_.SetTarget(Vector2{player->GetPositionX() + 64,
                                   3 * static_cast<float>(screen_height_) / 5});
@@ -131,27 +131,29 @@ void Game::HandleResize() {
 
 void Game::HandleKeyboardEvents() {
     auto player = std::get_if<Player>(actors_[0].get());
-
-    for (int i = 1; i < actors_.size(); i++) {
+    // Constantly call on update with 105 (Numpad 9) to cause the player to fall downward
+    player->Update(105, camera_, background_, actors_);
+    
+    /*for (int i = 1; i < actors_.size(); i++) {
         for (int j = 1; j < actors_.size(); j++) {
             player->CheckCollision(actors_[i]);
 
             if (i != j) {
             }
         }
-    }
+    }*/
 
     if (IsKeyDown(KEY_A)) {
-        player->Update(KEY_A, camera_, background_);
+        player->Update(KEY_A, camera_, background_, actors_);
     }
     if (IsKeyDown(KEY_D)) {
-        player->Update(KEY_D, camera_, background_);
+        player->Update(KEY_D, camera_, background_, actors_);
     }
     if (IsKeyDown(KEY_W)) {
-        player->Update(KEY_W, camera_, background_);
+        player->Update(KEY_W, camera_, background_, actors_);
     }
     if (IsKeyDown(KEY_S)) {
-        player->Update(KEY_S, camera_, background_);
+        player->Update(KEY_S, camera_, background_, actors_);
     }
 
     if (IsKeyDown(KEY_UP)) {
@@ -167,6 +169,9 @@ void Game::HandleKeyboardEvents() {
     }
     if (IsKeyPressed(KEY_F)) {
         camera_.ToggleMode();
+    }
+    if (IsKeyPressed(KEY_SPACE)) {
+        player->Update(KEY_SPACE, camera_, background_, actors_);
     }
 }
 

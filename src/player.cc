@@ -63,7 +63,9 @@ void Player::Draw() {
 
     rl::Rectangle dest_rec = {position_.x, position_.y, width, height};
 
-    texture_.Draw(source_rec, dest_rec, {0, 0});
+    //texture_.Draw(source_rec, dest_rec, {0, 0});
+    rl::Rectangle test = {position_.x, position_.y,128,128};
+    test.Draw(YELLOW);
 }
 
 bool Player::CheckLeftCollision(
@@ -296,21 +298,13 @@ void Player::Update(int event, Camera& camera, std::shared_ptr<Background> bg) {
             position_.x += xspeed;
         }
     }
-
-    if (event == KEY_W && !collision_objects_[2].has_value()) {
+    if (event == KEY_W) {
+        // Do something else, but don't just go up
+    }
+    // Added jump
+    if (event == KEY_SPACE && collision_objects_[3].has_value()) {
         collision_objects_[3] = std::nullopt;
-        float yspeed = std::abs(velocity_.y);
-        if (velocity_.y > 0.0F) {
-            velocity_.y = 0.0F;
-        }
-
-        if (yspeed < 10.0F) {
-            velocity_.y -= 0.1F;
-        }
-
-        yspeed = std::abs(velocity_.y);
-
-        position_.y -= yspeed;
+        velocity_.y = -20.0f;
     }
     if (event == KEY_S && !collision_objects_[3].has_value()) {
         collision_objects_[2] = std::nullopt;
@@ -326,6 +320,152 @@ void Player::Update(int event, Camera& camera, std::shared_ptr<Background> bg) {
         yspeed = std::abs(velocity_.y);
 
         position_.y += yspeed;
+    }
+    // Added constant force downward
+    if (event == 105 && collision_objects_[3].has_value()) {
+        velocity_.y = 0;
+        collision_objects_[3];
+    }
+    else if(event == 105) {
+        collision_objects_[2] = std::nullopt;
+        if (velocity_.y < 10.0F) {
+            velocity_.y += 1.2F;
+        }
+        else {
+            velocity_.y = 10.0F;
+        }
+        position_.y += velocity_.y;
+    }
+}
+
+void Player::Update(int event, Camera& camera, std::shared_ptr<Background> bg, std::vector<std::shared_ptr<Actor>> actors) {
+    // Overlaps are considered from the perspective of the object
+    float actor_left_side = 0.0f;
+    float actor_right_side = 0.0f;
+    float actor_top_side = 0.0f;
+    float actor_bottom_side = 0.0f;
+    bool left_will_overlap = false;
+    bool right_will_overlap = false;
+    bool top_will_overlap = false;
+    bool bottom_will_overlap = false;
+    float maxX = 10000.0f;
+    float minX = -10000.0f;
+    float maxY = 10000.0f;
+    float minY = -10000.0f;
+    // Find the object that 
+    for (auto& actor: actors){
+        std::visit([&](auto&& arg) {
+            using T=std::decay_t<decltype(arg)>;
+            actor_left_side = arg.GetPositionX();
+            actor_right_side = arg.GetPositionX() + arg.GetDimensions().x;
+            actor_top_side = arg.GetPositionY();
+            actor_bottom_side = arg.GetPositionY() + arg.GetDimensions().y;
+            if constexpr std::is_same_v<T, UntexturedPlatform> {
+                if (position_.x + 128 + velocity_.x >= actor_left_side) {
+                    left_will_overlap = true;
+                    maxX = actor_left_side;
+                }
+                if (position_.x - velocity_.x <= actor_right_side) {
+                    right_will_overlap = true;
+                    minX = actor_right_side;
+                }
+                if (position_.y + 128 + velocity_.y  >= actor_top_side) {
+                    top_will_overlap = true;
+                    maxY = actor_top_side;
+                }
+                if (position_.y - velocity_.y <= actor_bottom_side) {
+                    bottom_will_overlap = true;
+                    minY = actor_bottom_side;
+                }
+            }
+        }, *actor);
+    }
+    if (event == KEY_A && right_will_overlap != true) {
+        float xspeed = std::abs(velocity_.x);
+        if (velocity_.x > 0.0F) {
+            velocity_.x = 0.0F;
+        }
+
+        if (xspeed < 10.0F) {
+            velocity_.x -= 0.1F;
+        }
+
+        xspeed = std::abs(velocity_.x);
+
+        bg->source_rec_.x -= xspeed;
+        bg->dest_rec_.x -= xspeed;
+        if (camera.Mode() == Camera::Mode::kFixed &&
+            position_.x > bg->dest_rec_.x) {
+            camera.SubtractOffsetX(xspeed);
+            position_.x -= xspeed;
+        }
+    }
+    else if (event == KEY_A && right_will_overlap == true && (top_will_overlap == true || bottom_will_overlap == true) && position_.x != minX) {
+        position_.x = minX;
+    }
+    if (event == KEY_D && left_will_overlap != true) {
+        float xspeed = std::abs(velocity_.x);
+        if (velocity_.x < 0.0F) {
+            velocity_.x = 0.0F;
+        }
+        if (xspeed < 10.0F) {
+            velocity_.x += 0.1F;
+        }
+
+        xspeed = std::abs(velocity_.x);
+
+        bg->source_rec_.x += xspeed;
+        bg->dest_rec_.x += xspeed;
+
+        if (camera.Mode() == Camera::Mode::kFixed &&
+            position_.x < bg->dest_rec_.x + bg->dest_rec_.width - 128) {
+            camera.AddOffsetX(xspeed);
+            position_.x += xspeed;
+        }
+    }
+    else if (event == KEY_D && left_will_overlap == true && (top_will_overlap == true || bottom_will_overlap == true) && position_.x + 128 != maxX) {
+        position_.x = maxX;
+    }
+    if (event == KEY_W) {
+        // Do something else, but don't just go up
+    }
+    if (event == KEY_S && top_will_overlap != true) {
+        float yspeed = std::abs(velocity_.y);
+        if (velocity_.y < 0.0F) {
+            velocity_.y = 0.0F;
+        }
+
+        if (yspeed < 10.0F) {
+            velocity_.y += 0.1F;
+        }
+
+        yspeed = std::abs(velocity_.y);
+
+        position_.y += yspeed;
+    }
+    else if (event == KEY_S && top_will_overlap == true && (left_will_overlap == true || right_will_overlap == true) && position_.y + 128 != maxY) {
+        position_.y = maxY;
+    }
+    // Added jump
+    if (event == KEY_SPACE && bottom_will_overlap != true) {
+        velocity_.y = -20.0f;
+    }
+    else if (event == KEY_SPACE && bottom_will_overlap == true && (left_will_overlap == true || right_will_overlap == true) && position_.y != minY) {
+        position_.y = minY;
+    }
+    // Added constant force downward
+    if (event == 105 && top_will_overlap == true) {
+        velocity_.y = 0;
+        position_.y = maxY;
+    }
+    else if(event == 105 && top_will_overlap != true) {
+        if (velocity_.y < 10.0F) {
+            velocity_.y += 1.2F;
+        }
+        else {
+            velocity_.y = 10.0F;
+        }
+        position_.y += velocity_.y;
     }
 }
 

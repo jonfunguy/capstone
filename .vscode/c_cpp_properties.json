@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Windows",
+            "windowsSdkVersion": "10.0.19041.0",
+            "includePath": [
+                "${default}",
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/zig-out/include"
+            ],
+            "compilerPath": null,
+            "intellisenseMode": "windows-clang-x64",
+            "defines": [],
+            "cStandard": "c17",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}

@@ -27,16 +27,25 @@ public:
         position_ = position;
     }
 
+    // added get x and y velocity functions
+    float GetVelocityY() { return velocity_y;}
+    float GetVelocityX() { return velocity_x;}
     inline auto GetPositionX() const -> float { return position_.x; }
     inline auto GetPositionY() const -> float { return position_.y; }
 
     inline void SetPosition(float x, float y) { position_ = rl::Vector2{x, y}; }
     inline void SetPositionX(float x) { position_.x = x; }
     inline void SetPositionY(float y) { position_.y = y; }
+     // Added set x and y velocity functions
+    void SetVelocityX(float newVelocity){ velocity_x = newVelocity; }
+    void SetVelocityY(float newVelocity){ velocity_y = newVelocity; }
 
 protected:
     rl::Vector2 position_;
     float       scale_{1.0f};
+    // Added 2 variables for every game object, x and y velocity 
+    float velocity_y = 0;
+    float velocity_x = 0;
 };
 
 /**
