@@ -134,6 +134,8 @@ void Game::HandleKeyboardEvents() {
     // Constantly call on update with 105 (Numpad 9) to cause the player to fall downward
     player->Update(105, camera_, background_, actors_);
     
+    // Commented out the old collision
+    // Changed all player->Update() function calls to include actors_ as the 4th argument
     /*for (int i = 1; i < actors_.size(); i++) {
         for (int j = 1; j < actors_.size(); j++) {
             player->CheckCollision(actors_[i]);

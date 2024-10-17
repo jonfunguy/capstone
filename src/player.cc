@@ -63,7 +63,8 @@ void Player::Draw() {
 
     rl::Rectangle dest_rec = {position_.x, position_.y, width, height};
 
-    //texture_.Draw(source_rec, dest_rec, {0, 0});
+    // texture_.Draw(source_rec, dest_rec, {0, 0});
+    // Stopped drawing the player texture, redrew it as a yellow box with the same bounds to test collision
     rl::Rectangle test = {position_.x, position_.y,128,128};
     test.Draw(YELLOW);
 }
@@ -321,7 +322,6 @@ void Player::Update(int event, Camera& camera, std::shared_ptr<Background> bg) {
 
         position_.y += yspeed;
     }
-    // Added constant force downward
     if (event == 105 && collision_objects_[3].has_value()) {
         velocity_.y = 0;
         collision_objects_[3];
@@ -338,6 +338,7 @@ void Player::Update(int event, Camera& camera, std::shared_ptr<Background> bg) {
     }
 }
 
+// New update function that takes a list of actors
 void Player::Update(int event, Camera& camera, std::shared_ptr<Background> bg, std::vector<std::shared_ptr<Actor>> actors) {
     // Overlaps are considered from the perspective of the object
     float actor_left_side = 0.0f;
@@ -352,7 +353,7 @@ void Player::Update(int event, Camera& camera, std::shared_ptr<Background> bg, s
     float minX = -10000.0f;
     float maxY = 10000.0f;
     float minY = -10000.0f;
-    // Find the object that 
+    // Find the max and min for y and x to find out hoe far we are allowed to go in each direction
     for (auto& actor: actors){
         std::visit([&](auto&& arg) {
             using T=std::decay_t<decltype(arg)>;
@@ -380,6 +381,7 @@ void Player::Update(int event, Camera& camera, std::shared_ptr<Background> bg, s
             }
         }, *actor);
     }
+    // If we are moving left and not overlapping with the right side of the object, move the player normally.
     if (event == KEY_A && right_will_overlap != true) {
         float xspeed = std::abs(velocity_.x);
         if (velocity_.x > 0.0F) {
@@ -400,9 +402,11 @@ void Player::Update(int event, Camera& camera, std::shared_ptr<Background> bg, s
             position_.x -= xspeed;
         }
     }
+    // If we are overlapping on the right and top or bottom, we move the player to the minX because they would overlap if we allowed them to move normally.
     else if (event == KEY_A && right_will_overlap == true && (top_will_overlap == true || bottom_will_overlap == true) && position_.x != minX) {
         position_.x = minX;
     }
+    // If we are moving right and not overlapping with the left side of the object, move the player normally.
     if (event == KEY_D && left_will_overlap != true) {
         float xspeed = std::abs(velocity_.x);
         if (velocity_.x < 0.0F) {
@@ -423,12 +427,14 @@ void Player::Update(int event, Camera& camera, std::shared_ptr<Background> bg, s
             position_.x += xspeed;
         }
     }
+    // If we are overlapping on the left and top or bottom, we move the player to the maxX because they would overlap if we allowed them to move normally.
     else if (event == KEY_D && left_will_overlap == true && (top_will_overlap == true || bottom_will_overlap == true) && position_.x + 128 != maxX) {
         position_.x = maxX;
     }
     if (event == KEY_W) {
         // Do something else, but don't just go up
     }
+    // If we are moving down and not overlapping with the top side of the object, move the player normally.
     if (event == KEY_S && top_will_overlap != true) {
         float yspeed = std::abs(velocity_.y);
         if (velocity_.y < 0.0F) {
@@ -443,21 +449,20 @@ void Player::Update(int event, Camera& camera, std::shared_ptr<Background> bg, s
 
         position_.y += yspeed;
     }
-    else if (event == KEY_S && top_will_overlap == true && (left_will_overlap == true || right_will_overlap == true) && position_.y + 128 != maxY) {
-        position_.y = maxY;
-    }
     // Added jump
     if (event == KEY_SPACE && bottom_will_overlap != true) {
         velocity_.y = -20.0f;
     }
+    // If we are overlapping on the bottom and left or right, we move the player to the minY because they would overlap if we allowed them to move normally.
     else if (event == KEY_SPACE && bottom_will_overlap == true && (left_will_overlap == true || right_will_overlap == true) && position_.y != minY) {
         position_.y = minY;
     }
-    // Added constant force downward
+    // If we are overlapping with the top make y velocity 0 and move the player to the maxY because they would overlap if we allowed them to move normally.
     if (event == 105 && top_will_overlap == true) {
         velocity_.y = 0;
         position_.y = maxY;
     }
+    // If we aren't overlapping on the top, make the player fall constantly
     else if(event == 105 && top_will_overlap != true) {
         if (velocity_.y < 10.0F) {
             velocity_.y += 1.2F;
